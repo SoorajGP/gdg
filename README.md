@@ -12,7 +12,9 @@ The application allows users to define an axiom, production rules, angle, and nu
 - Turtle graphics rendered inside a Tkinter canvas
 - Parallel L-system string expansion
 - Customizable axiom, rules, angle, and iterations
-- Optimized rendering using `tracer()` for smooth drawing
+- Branching support using push/pop turtle state (`[` and `]`)
+- Recursive color gradient for visual depth
+- Optimized rendering for large L-system strings
 
 ---
 
@@ -40,15 +42,8 @@ The application allows users to define an axiom, production rules, angle, and nu
 
 ---
 
-Future Improvements
 
-Support for branching symbols ([ and ])
 
-Automatic centering and scaling of fractals
-
-Color gradients based on recursion depth
-
-Input validation and error messages
 
 Sooraj G P
 VIT Vellore

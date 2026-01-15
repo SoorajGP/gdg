@@ -59,7 +59,24 @@ def generate_fractal():
     rules = parse_rules(rules_text)
     final_string = expand_l_system(axiom, rules, iterations)
 
-    print(final_string)  # Debug output for now
+    draw_l_system(final_string, angle)
+
+def draw_l_system(instructions, angle, step=5):
+    screen.tracer(0, 0)  # Speed optimization
+    t.penup()
+    t.goto(0, 0)
+    t.setheading(0)
+    t.pendown()
+
+    for char in instructions:
+        if char == "F":
+            t.forward(step)
+        elif char == "+":
+            t.right(angle)
+        elif char == "-":
+            t.left(angle)
+
+    screen.update()
 
 
 

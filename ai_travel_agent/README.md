@@ -56,13 +56,16 @@ This demonstrates agentic planning and tool-based reasoning without reliance on 
     "Day 3": ["Local sightseeing"]
   }
 }
+```
 
-Tech Stack
+---
+
+## Tech Stack
 - Python
 - LangChain
 - Agent-based architecture with tool calling
 
-Environment Note
+## Environment Note
 
 - This project was developed using Python 3.13.
 Due to experimental NumPy builds on Windows for this Python version, non-fatal runtime warnings may appear during execution. These warnings do not affect the agent logic, tool execution, or output generation.

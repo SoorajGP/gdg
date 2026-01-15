@@ -1,5 +1,6 @@
 import socket
 import threading
+from datetime import datetime
 
 SERVER = "irc.libera.chat"
 PORT = 6667
@@ -7,15 +8,28 @@ CHANNEL = "#testchannel"
 NICK = "SoorajBot123"
 REALNAME = "Sooraj"
 
+RESET = "\033[0m"
+GREEN = "\033[92m"
+CYAN = "\033[96m"
+YELLOW = "\033[93m"
+
 
 def receive_messages(sock):
     while True:
         try:
             message = sock.recv(2048).decode("utf-8")
-            print(message)
+            timestamp=datetime.now().strftime("%H:%M:%S")
+            print(f"[{timestamp}] {message}")
 
             if message.startswith("PING"):
                 sock.sendall(f"PONG {message.split()[1]}\r\n".encode())
+
+            if "PRIVMSG" in message:
+                print(f"{GREEN}{message}{RESET}")
+            elif "PING" in message:
+                print(f"{YELLOW}{message}{RESET}")
+            else:
+                print(f"{CYAN}{message}{RESET}")
 
         except:
             print("Disconnected from server.")

@@ -19,6 +19,50 @@ t = turtle.RawTurtle(screen)
 t.speed(0)
 t.hideturtle()
 
+def expand_l_system(axiom, rules, iterations):
+    current = axiom
+
+    for _ in range(iterations):
+        next_string = ""
+        for char in current:
+            if char in rules:
+                next_string += rules[char]
+            else:
+                next_string += char
+        current = next_string
+
+    return current
+
+def parse_rules(rules_text):
+    rules = {}
+    parts = rules_text.split(",")
+
+    for part in parts:
+        if "=" in part:
+            key, value = part.split("=")
+            rules[key.strip()] = value.strip()
+
+    return rules
+
+def generate_fractal():
+    t.clear()
+    t.penup()
+    t.goto(0, 0)
+    t.setheading(0)
+    t.pendown()
+
+    axiom = axiom_entry.get()
+    rules_text = rules_entry.get()
+    angle = float(angle_entry.get())
+    iterations = int(iterations_entry.get())
+
+    rules = parse_rules(rules_text)
+    final_string = expand_l_system(axiom, rules, iterations)
+
+    print(final_string)  # Debug output for now
+
+
+
 
 # ----------------- Control Panel -----------------
 controls = tk.Frame(root)
@@ -57,8 +101,9 @@ iterations_entry.pack(fill=tk.X, pady=5)
 
 
 # Generate button (logic will be added next)
-generate_btn = tk.Button(controls, text="Generate Fractal")
+generate_btn = tk.Button(controls, text="Generate Fractal", command=generate_fractal)
 generate_btn.pack(pady=20)
+
 
 
 root.mainloop()

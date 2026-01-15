@@ -62,21 +62,44 @@ def generate_fractal():
     draw_l_system(final_string, angle)
 
 def draw_l_system(instructions, angle, step=5):
-    screen.tracer(0, 0)  # Speed optimization
+    stack = []
+    length = len(instructions)
+
+    screen.tracer(0, 0)  # Real-time optimization
     t.penup()
     t.goto(0, 0)
-    t.setheading(0)
+    t.setheading(90)  # Better for tree-like structures
     t.pendown()
 
-    for char in instructions:
+    for i, char in enumerate(instructions):
+
+        # 🌈 Recursive Gradient (explained below)
+        color_ratio = i / length
+        t.pencolor(color_ratio, 0.6, 1 - color_ratio)
+
         if char == "F":
             t.forward(step)
+
         elif char == "+":
             t.right(angle)
+
         elif char == "-":
             t.left(angle)
 
+        elif char == "[":
+            # Save state
+            stack.append((t.position(), t.heading()))
+
+        elif char == "]":
+            # Restore state
+            position, heading = stack.pop()
+            t.penup()
+            t.goto(position)
+            t.setheading(heading)
+            t.pendown()
+
     screen.update()
+
 
 
 

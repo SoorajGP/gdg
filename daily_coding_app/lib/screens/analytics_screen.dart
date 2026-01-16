@@ -3,6 +3,9 @@ import '../models/coding_question.dart';
 import '../widgets/stat_card.dart';
 import '../services/auth_service.dart';
 import '../services/local_storage_service.dart';
+import '../services/codeforces_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 
 
 class AnalyticsScreen extends StatelessWidget {
@@ -138,7 +141,52 @@ class AnalyticsScreen extends StatelessWidget {
                 },
               ),
             ),
+
+          const SizedBox(height: 24),
+            const Text(
+              "External Challenge (Codeforces)",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            FutureBuilder(
+              future: CodeforcesService.fetchProblem(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Text("Loading problem..."),
+                  );
+                }
+
+                final p = snapshot.data as Map<String, dynamic>;
+
+                return Card(
+                  child: ListTile(
+                    title: Text(p['name']),
+                    subtitle: Text(
+                      "Rating: ${p['rating']} • ${p['tags'].join(', ')}",
+                    ),
+                    trailing: const Icon(Icons.open_in_new),
+                    onTap: () async {
+                      final uri = Uri.parse(p['url']);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(
+                          uri,
+                          mode: LaunchMode.externalApplication,
+                        );
+                      }
+                    },
+                  ),
+                );
+              },
+            ),
+  
         ],
+      
       ),
     );
   }

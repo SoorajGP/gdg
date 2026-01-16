@@ -2,13 +2,13 @@ import tkinter as tk
 import turtle
 
 
-# ----------------- Main Window -----------------
+# MAIN WINDOW
 root = tk.Tk()
 root.title("L-System Fractal Architect")
 root.geometry("900x600")
 
 
-# ----------------- Canvas -----------------
+# CANVAS
 canvas = tk.Canvas(root, width=600, height=600)
 canvas.pack(side=tk.LEFT)
 
@@ -81,7 +81,7 @@ def draw_l_system(instructions, angle, step=5):
 
 
 
-# ----------------- Control Panel -----------------
+# CONTROL PANEL
 controls = tk.Frame(root)
 controls.pack(side=tk.RIGHT, fill=tk.BOTH, padx=10, pady=10)
 
@@ -117,7 +117,7 @@ iterations_entry.insert(0, "2")
 iterations_entry.pack(fill=tk.X, pady=5)
 
 
-# Generate button (logic will be added next)
+# Generate button 
 generate_btn = tk.Button(controls, text="Generate Fractal", command=generate_fractal)
 generate_btn.pack(pady=20)
 

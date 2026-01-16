@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/coding_question.dart';
 import '../widgets/stat_card.dart';
+import '../services/auth_service.dart';
 
 class AnalyticsScreen extends StatelessWidget {
   final int currentStreak;
@@ -29,15 +30,28 @@ class AnalyticsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Your Progress",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Your Progress",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              TextButton.icon(
+                onPressed: () async {
+                  await AuthService.signOut();
+                },
+                icon: const Icon(Icons.logout),
+                label: const Text("Logout"),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
 
-          StatCard("🔥 Current Streak", "$currentStreak days"),
-          StatCard("🏆 Longest Streak", "$longestStreak days"),
-          StatCard("✅ Total Attempts", "$totalAttempts"),
+
+          StatCard(" Current Streak", "$currentStreak days"),
+          StatCard(" Longest Streak", "$longestStreak days"),
+          StatCard(" Total Attempts", "$totalAttempts"),
 
           const SizedBox(height: 24),
           const Text(

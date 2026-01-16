@@ -13,7 +13,103 @@ class DailyCodingApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: QuestionScreen(),
+      home: HomeShell(),
+    );
+  }
+}
+
+/// HOME SHELL
+class HomeShell extends StatefulWidget {
+  const HomeShell({super.key});
+
+  @override
+  State<HomeShell> createState() => _HomeShellState();
+}
+
+class _HomeShellState extends State<HomeShell> {
+  int selectedIndex = 0;
+
+  int currentStreak = 0;
+  int longestStreak = 0;
+  int totalAttempts = 0;
+  String? lastAttemptDate;
+
+  @override
+  void initState() {
+    super.initState();
+    loadStats();
+  }
+
+  Future<void> loadStats() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      currentStreak = prefs.getInt('currentStreak') ?? 0;
+      longestStreak = prefs.getInt('longestStreak') ?? 0;
+      totalAttempts = prefs.getInt('totalAttempts') ?? 0;
+      lastAttemptDate = prefs.getString('lastDate');
+    });
+  }
+
+  Future<void> updateStats() async {
+    final prefs = await SharedPreferences.getInstance();
+    String today = DateTime.now().toIso8601String().split('T')[0];
+
+    if (lastAttemptDate == today) return;
+
+    if (lastAttemptDate != null) {
+      DateTime last = DateTime.parse(lastAttemptDate!);
+      DateTime now = DateTime.now();
+
+      if (now.difference(last).inDays == 1) {
+        currentStreak++;
+      } else {
+        currentStreak = 1;
+      }
+    } else {
+      currentStreak = 1;
+    }
+
+    totalAttempts++;
+    longestStreak =
+        currentStreak > longestStreak ? currentStreak : longestStreak;
+    lastAttemptDate = today;
+
+    await prefs.setInt('currentStreak', currentStreak);
+    await prefs.setInt('longestStreak', longestStreak);
+    await prefs.setInt('totalAttempts', totalAttempts);
+    await prefs.setString('lastDate', today);
+
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(
+        index: selectedIndex,
+        children: [
+          QuestionScreen(onSubmit: updateStats),
+          AnalyticsScreen(
+            currentStreak: currentStreak,
+            longestStreak: longestStreak,
+            totalAttempts: totalAttempts,
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: selectedIndex,
+        onTap: (i) => setState(() => selectedIndex = i),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.code),
+            label: "Question",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.insights),
+            label: "Analytics",
+          ),
+        ],
+      ),
     );
   }
 }
@@ -35,9 +131,11 @@ class CodingQuestion {
   });
 }
 
-/// MAIN SCREEN
+/// QUESTION SCREEN
 class QuestionScreen extends StatefulWidget {
-  const QuestionScreen({super.key});
+  final Future<void> Function() onSubmit;
+
+  const QuestionScreen({super.key, required this.onSubmit});
 
   @override
   State<QuestionScreen> createState() => _QuestionScreenState();
@@ -45,22 +143,15 @@ class QuestionScreen extends StatefulWidget {
 
 class _QuestionScreenState extends State<QuestionScreen> {
   bool submitted = false;
-  String userAnswer = "";
 
-  int currentStreak = 0;
-  String? lastAttemptDate;
-
-  /// QUESTION BANK
   final List<CodingQuestion> questions = [
     CodingQuestion(
       title: "Reverse a String",
-      description: "Write logic to reverse a given string.",
+      description: "Write logic to reverse a string.",
       difficulty: "Easy",
       topic: "Strings",
       solution:
-          "Use two pointers at start and end.\n"
-          "Swap characters until pointers meet.\n"
-          "Time Complexity: O(n)",
+          "Use two pointers.\nSwap characters.\nTime Complexity: O(n)",
     ),
     CodingQuestion(
       title: "Find Maximum Element",
@@ -68,19 +159,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
       difficulty: "Easy",
       topic: "Arrays",
       solution:
-          "Initialize max with first element.\n"
-          "Traverse array and update max.\n"
-          "Time Complexity: O(n)",
-    ),
-    CodingQuestion(
-      title: "Check Palindrome",
-      description: "Check whether a string is a palindrome.",
-      difficulty: "Medium",
-      topic: "Strings",
-      solution:
-          "Compare characters from start and end.\n"
-          "If mismatch, not a palindrome.\n"
-          "Time Complexity: O(n)",
+          "Iterate through array and track max.\nTime Complexity: O(n)",
     ),
   ];
 
@@ -90,158 +169,191 @@ class _QuestionScreenState extends State<QuestionScreen> {
   void initState() {
     super.initState();
     todayQuestion = getTodayQuestion();
-    loadStreak();
   }
 
-  /// 🔹 DAILY ROTATION
   CodingQuestion getTodayQuestion() {
     DateTime now = DateTime.now();
-    int dayNumber = now.year * 1000 + now.month * 50 + now.day;
-    int index = dayNumber % questions.length;
-    return questions[index];
-  }
-
-  /// 🔹 LOAD STREAK FROM LOCAL STORAGE
-  Future<void> loadStreak() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      currentStreak = prefs.getInt('streak') ?? 0;
-      lastAttemptDate = prefs.getString('lastDate');
-    });
-  }
-
-  /// 🔹 UPDATE STREAK ON SUBMIT
-  Future<void> updateStreak() async {
-    final prefs = await SharedPreferences.getInstance();
-    String today = DateTime.now().toIso8601String().split('T')[0];
-
-    if (lastAttemptDate == today) return;
-
-    if (lastAttemptDate != null) {
-      DateTime last = DateTime.parse(lastAttemptDate!);
-      DateTime now = DateTime.now();
-
-      if (now.difference(last).inDays == 1) {
-        currentStreak++;
-      } else {
-        currentStreak = 1;
-      }
-    } else {
-      currentStreak = 1;
-    }
-
-    lastAttemptDate = today;
-
-    await prefs.setInt('streak', currentStreak);
-    await prefs.setString('lastDate', today);
+    int value = now.year * 1000 + now.month * 50 + now.day;
+    return questions[value % questions.length];
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Daily Coding Question"),
-        centerTitle: true,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Card(
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    todayQuestion.title,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Chip(label: Text(todayQuestion.difficulty)),
+                      const SizedBox(width: 8),
+                      Chip(label: Text(todayQuestion.topic)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(todayQuestion.description),
+                  const SizedBox(height: 20),
+
+                  const SizedBox(height: 16),
+
+                  Container(
+                  margin: const EdgeInsets.only(top: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Your Attempt",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        enabled: !submitted,
+                        maxLines: 3,
+                        decoration: const InputDecoration(
+                          hintText: "Write your answer or pseudo-code here",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+
+                  const SizedBox(height: 16),
+
+                  ElevatedButton(
+                    onPressed: submitted
+                        ? null
+                        : () async {
+                            setState(() => submitted = true);
+                            await widget.onSubmit();
+                          },
+                    child: const Text("Submit Answer"),
+                  ),
+                  if (submitted) ...[
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(todayQuestion.solution),
+                    ),
+                  ]
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// STREAK DISPLAY
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade100,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                "🔥 Current Streak: $currentStreak days",
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+    );
+  }
+}
 
-            const SizedBox(height: 20),
+/// ANALYTICS SCREEN (CLEAN & MEANINGFUL)
+class AnalyticsScreen extends StatelessWidget {
+  final int currentStreak;
+  final int longestStreak;
+  final int totalAttempts;
 
-            /// TITLE
-            Text(
-              todayQuestion.title,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+  const AnalyticsScreen({
+    super.key,
+    required this.currentStreak,
+    required this.longestStreak,
+    required this.totalAttempts,
+  });
 
-            const SizedBox(height: 8),
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Your Progress",
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
 
-            /// TAGS
-            Row(
-              children: [
-                Chip(label: Text(todayQuestion.difficulty)),
-                const SizedBox(width: 8),
-                Chip(label: Text(todayQuestion.topic)),
-              ],
-            ),
+          _StatCard(
+            icon: Icons.local_fire_department,
+            label: "Current Streak",
+            value: "$currentStreak days",
+            color: Colors.orange,
+          ),
 
-            const SizedBox(height: 16),
+          _StatCard(
+            icon: Icons.emoji_events,
+            label: "Longest Streak",
+            value: "$longestStreak days",
+            color: Colors.blue,
+          ),
 
-            /// DESCRIPTION
-            Text(
-              todayQuestion.description,
-              style: const TextStyle(fontSize: 16),
-            ),
+          _StatCard(
+            icon: Icons.check_circle,
+            label: "Total Days Attempted",
+            value: "$totalAttempts",
+            color: Colors.green,
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-            const SizedBox(height: 20),
+/// REUSABLE STAT CARD 
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
 
-            /// ANSWER INPUT
-            TextField(
-              enabled: !submitted,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: "Your Answer / Pseudo-code",
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                userAnswer = value;
-              },
-            ),
+  const _StatCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
-            const SizedBox(height: 20),
-
-            /// SUBMIT BUTTON
-            ElevatedButton(
-              onPressed: submitted
-                  ? null
-                  : () async {
-                      setState(() {
-                        submitted = true;
-                      });
-                      await updateStreak();
-                      setState(() {});
-                    },
-              child: const Text("Submit Answer"),
-            ),
-
-            const SizedBox(height: 20),
-
-            /// SOLUTION
-            if (submitted)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  "Solution:\n\n${todayQuestion.solution}",
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-          ],
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: Icon(icon, color: color),
+        title: Text(label),
+        trailing: Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

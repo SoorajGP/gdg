@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/coding_question.dart';
+import '../services/local_storage_service.dart';
+
 
 class QuestionScreen extends StatefulWidget {
   final List<CodingQuestion> questions;
@@ -43,6 +45,8 @@ class _QuestionScreenState extends State<QuestionScreen> {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 12),
+        elevation: 1,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -65,8 +69,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
                           ? Icons.bookmark
                           : Icons.bookmark_border,
                     ),
-                    onPressed: () =>
-                        widget.onToggleBookmark(todayQuestion.id),
+                    onPressed: () async {
+                        await widget.onToggleBookmark(todayQuestion.id);
+                        setState(() {});
+                      },
+
                   ),
                 ],
               ),
@@ -108,7 +115,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.green.shade100,
+                    color: Colors.deepPurple.shade50,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(todayQuestion.solution),

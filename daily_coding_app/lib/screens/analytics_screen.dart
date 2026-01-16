@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/coding_question.dart';
 import '../widgets/stat_card.dart';
 import '../services/auth_service.dart';
+import '../services/local_storage_service.dart';
+
 
 class AnalyticsScreen extends StatelessWidget {
   final int currentStreak;
@@ -49,9 +51,43 @@ class AnalyticsScreen extends StatelessWidget {
           const SizedBox(height: 16),
 
 
-          StatCard(" Current Streak", "$currentStreak days"),
-          StatCard(" Longest Streak", "$longestStreak days"),
-          StatCard(" Total Attempts", "$totalAttempts"),
+          
+
+          FutureBuilder(
+            future: LocalStorageService.getStats(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final data = snapshot.data as Map<String, dynamic>;
+
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        StatCard(
+                          "Current Streak",
+                          data['currentStreak'].toString(),
+                        ),
+                        StatCard(
+                          "Longest Streak",
+                          data['longestStreak'].toString(),
+                        ),
+                        StatCard(
+                          "Total Attempts",
+                          data['totalAttempts'].toString(),
+                        ),
+                      ],
+                    ),
+                ),
+              );
+            },
+          ),
+
+
 
           const SizedBox(height: 24),
           const Text(

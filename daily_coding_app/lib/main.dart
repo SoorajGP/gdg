@@ -22,6 +22,26 @@ class DailyCodingApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.deepPurple,
+        scaffoldBackgroundColor: const Color(0xFFF8F6FB),
+        textTheme: const TextTheme(
+          titleLarge: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 15,
+            height: 1.4,
+          ),
+        ),
+      ),
+
+
+
+
+
+
       home: StreamBuilder(
         stream: AuthService.authState(),
         builder: (context, snapshot) {

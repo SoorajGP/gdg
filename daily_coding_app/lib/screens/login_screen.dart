@@ -42,21 +42,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 20),
 
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  if (isLogin) {
-                    await AuthService.signIn(email, password);
-                  } else {
-                    await AuthService.signUp(email, password);
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  try {
+                    if (isLogin) {
+                      await AuthService.signIn(email, password);
+                    } else {
+                      await AuthService.signUp(email, password);
+                    }
+                  } catch (e) {
+                    setState(() => error = e.toString());
                   }
-                } catch (e) {
-                  setState(() => error = e.toString());
-                }
-              },
-              child: Text(isLogin ? "Login" : "Sign Up"),
+                },
+                child: Text(isLogin ? "Login" : "Sign Up"),
+              ),
             ),
-
+            
             TextButton(
               onPressed: () {
                 setState(() {

@@ -85,13 +85,14 @@ A minimal, distraction-free mobile application that delivers **one curated codin
 
 ##  Project Structure
 lib/
-├── models/ # Data models
-├── screens/ # UI screens
-├── services/ # Business logic & integrations
-│ ├── auth_service.dart
-│ ├── local_storage_service.dart
-│ └── codeforces_service.dart
-└── main.dart # App entry point & auth-gated navigation
+- models/ # Data models
+- screens/ # UI screens
+- services/ # Business logic & integrations
+- - auth_service.dart
+- - local_storage_service.dart
+- - codeforces_service.dart
+- main.dart # App entry point & auth-gated 
+- navigation
 
 
 ---
